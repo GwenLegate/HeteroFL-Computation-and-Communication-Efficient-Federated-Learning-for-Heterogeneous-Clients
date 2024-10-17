@@ -51,8 +51,6 @@ def dirichlet_split_dataset(ds, num_clients, alpha, num_classes):
 
     for k in range(num_clients):
         for i in range(examples_per_client):
-            print(multinomial_vals)
-            print(f'i:{i}')
             sampled_label = np.argwhere(np.random.multinomial(1, multinomial_vals[k, :]) == 1)[0][0]
             label_indices = example_indices[sampled_label]
             client_samples[k].append(label_indices[count[sampled_label]])
