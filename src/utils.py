@@ -98,7 +98,7 @@ def recur(fn, input, *args):
 
 
 def process_dataset(dataset):
-    if cfg['data_name'] in ['MNIST', 'CIFAR10']:
+    if cfg['data_name'] in ['MNIST', 'CIFAR10', 'CIFAR100']:
         cfg['classes_size'] = dataset['train'].classes_size
     elif cfg['data_name'] in ['WikiText2']:
         cfg['vocab'] = dataset['train'].vocab
@@ -118,6 +118,7 @@ def process_control():
     cfg['data_split_mode'] = cfg['control']['data_split_mode']
     cfg['model_split_mode'] = cfg['control']['model_split_mode']
     cfg['model_mode'] = cfg['control']['model_mode']
+    print(f"model mode is: {cfg['model_mode']}")
     cfg['norm'] = cfg['control']['norm']
     cfg['scale'] = bool(int(cfg['control']['scale']))
     cfg['mask'] = bool(int(cfg['control']['mask']))

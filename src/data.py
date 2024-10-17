@@ -5,6 +5,7 @@ from config import cfg
 from torchvision import transforms
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import default_collate
+from dirichlet_data_split import dirichlet_split_dataset
 
 
 def fetch_dataset(data_name, subset):
@@ -22,7 +23,16 @@ def fetch_dataset(data_name, subset):
              transforms.RandomHorizontalFlip(),
              transforms.ToTensor(),
              transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]))
-        dataset['test'] = datasets.CIFAR10(root=root, split='test', subset=subset, transform=datasets.Compose(
+        dataset['test'] = datasets.CIFAR10(root=root, split='train', subset=subset, transform=datasets.Compose(
+            [transforms.ToTensor(),
+             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]))
+    elif data_name == 'CIFAR100':
+        dataset['train'] = datasets.CIFAR100(root=root, split='train', subset=subset, transform=datasets.Compose(
+            [transforms.RandomCrop(32, padding=4),
+             transforms.RandomHorizontalFlip(),
+             transforms.ToTensor(),
+             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]))
+        dataset['test'] = datasets.CIFAR100(root=root, split='train', subset=subset, transform=datasets.Compose(
             [transforms.ToTensor(),
              transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]))
     elif data_name in ['PennTreebank', 'WikiText2', 'WikiText103']:
@@ -51,8 +61,13 @@ def split_dataset(dataset, num_users, data_split_mode):
         data_split['train'], label_split = iid(dataset['train'], num_users)
         data_split['test'], _ = iid(dataset['test'], num_users)
     elif 'non-iid' in cfg['data_split_mode']:
-        data_split['train'], label_split = non_iid(dataset['train'], num_users)
+        '''data_split['train'], label_split = non_iid(dataset['train'], num_users)
         data_split['test'], _ = non_iid(dataset['test'], num_users, label_split)
+        print(f' old samples --> {data_split}')
+        print(f'old labels --> {label_split}')'''
+        data_split, label_split = dirichlet_split_dataset(dataset['train'], num_users, 0.1, dataset['train'].classes_size)
+        '''print(f' new samples --> {data_split}')
+        print(f'new labels --> {label_split}')'''
     else:
         raise ValueError('Not valid data split mode')
     return data_split, label_split

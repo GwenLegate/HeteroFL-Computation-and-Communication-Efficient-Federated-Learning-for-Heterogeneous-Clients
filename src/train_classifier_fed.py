@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Python version: 3.8
+
 import argparse
 import copy
 import datetime
@@ -27,6 +31,13 @@ for k in cfg:
 if args['control_name']:
     cfg['control'] = {k: v for k, v in zip(cfg['control'].keys(), args['control_name'].split('_'))} \
         if args['control_name'] != 'None' else {}
+
+# set model mode via bash variable
+try:
+    cfg['control']['model_mode'] = os.environ["MM"]
+except:
+    pass
+
 cfg['control_name'] = '_'.join([cfg['control'][k] for k in cfg['control']])
 cfg['pivot_metric'] = 'Global-Accuracy'
 cfg['pivot'] = -float('inf')
@@ -37,6 +48,7 @@ cfg['metric_name'] = {'train': {'Local': ['Local-Loss', 'Local-Accuracy']},
 def main():
     process_control()
     seeds = list(range(cfg['init_seed'], cfg['init_seed'] + cfg['num_experiments']))
+
     for i in range(cfg['num_experiments']):
         model_tag_list = [str(seeds[i]), cfg['data_name'], cfg['subset'], cfg['model_name'], cfg['control_name']]
         cfg['model_tag'] = '_'.join([x for x in model_tag_list if x])
@@ -60,12 +72,15 @@ def runExperiment():
     elif cfg['resume_mode'] == 2:
         last_epoch = 1
         _, data_split, label_split, model, _, _, _ = resume(model, cfg['model_tag'])
-        logger_path = os.path.join('output', 'runs', '{}'.format(cfg['model_tag']))
+        logger_path = os.path.join('/scratch/glegate/output', 'runs', '{}'.format(cfg['model_tag']))
         logger = Logger(logger_path)
     else:
         last_epoch = 1
         data_split, label_split = split_dataset(dataset, cfg['num_users'], cfg['data_split_mode'])
-        logger_path = os.path.join('output', 'runs', 'train_{}'.format(cfg['model_tag']))
+        '''print(f' data: {data_split}')
+        print(f"num: {len(data_split['test'][49])}")
+        print(f'label {label_split}')'''
+        logger_path = os.path.join('/scratch/glegate/output', 'runs', 'train_{}'.format(cfg['model_tag']))
         logger = Logger(logger_path)
     if data_split is None:
         data_split, label_split = split_dataset(dataset, cfg['num_users'], cfg['data_split_mode'])
@@ -86,11 +101,11 @@ def runExperiment():
             'cfg': cfg, 'epoch': epoch + 1, 'data_split': data_split, 'label_split': label_split,
             'model_dict': model_state_dict, 'optimizer_dict': optimizer.state_dict(),
             'scheduler_dict': scheduler.state_dict(), 'logger': logger}
-        save(save_result, './output/model/{}_checkpoint.pt'.format(cfg['model_tag']))
+        save(save_result, '/scratch/glegate/output/model/{}_checkpoint.pt'.format(cfg['model_tag']))
         if cfg['pivot'] < logger.mean['test/{}'.format(cfg['pivot_metric'])]:
             cfg['pivot'] = logger.mean['test/{}'.format(cfg['pivot_metric'])]
-            shutil.copy('./output/model/{}_checkpoint.pt'.format(cfg['model_tag']),
-                        './output/model/{}_best.pt'.format(cfg['model_tag']))
+            shutil.copy('/scratch/glegate/output/model/{}_checkpoint.pt'.format(cfg['model_tag']),
+                        '/scratch/glegate/output/model/{}_best.pt'.format(cfg['model_tag']))
         logger.reset()
     logger.safe(False)
     return
