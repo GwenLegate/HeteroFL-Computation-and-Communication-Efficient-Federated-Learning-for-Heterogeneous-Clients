@@ -2,6 +2,7 @@ import torch
 import datasets
 import numpy as np
 from config import cfg
+import torchvision
 from torchvision import transforms
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import default_collate
@@ -45,6 +46,20 @@ def fetch_dataset(data_name, subset):
                                                                                 normalize,]))
         dataset['test'] = datasets.Imagenet32('../data/imagenet32/out_data_train/',
                                                transform=transforms.Compose([transforms.ToTensor(), normalize, ]))
+    elif data_name == 'flowers102':
+        data_dir = '../data/flowers/'
+        train_transforms = transforms.Compose([transforms.Resize((224, 224)),
+                                               transforms.RandomHorizontalFlip(),
+                                               transforms.ToTensor(),
+                                               transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                                               ])
+        test_transforms = transforms.Compose([transforms.Resize((224, 224)),
+                                              transforms.ToTensor(),
+                                              transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                                              ])
+        dataset['train'] = datasets.Flowers102(f'{data_dir}train/', split='train', transform=train_transforms, download=True)
+        dataset['test'] = datasets.Flowers102(f'{data_dir}test/', split='test', transform=test_transforms, download=True)
+
     elif data_name in ['PennTreebank', 'WikiText2', 'WikiText103']:
         dataset['train'] = eval('datasets.{}(root=root, split=\'train\')'.format(data_name))
         dataset['test'] = eval('datasets.{}(root=root, split=\'test\')'.format(data_name))

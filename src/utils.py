@@ -100,6 +100,8 @@ def recur(fn, input, *args):
 def process_dataset(dataset):
     if cfg['data_name'] in ['MNIST', 'CIFAR10', 'CIFAR100', 'ImageNet32']:
         cfg['classes_size'] = dataset['train'].classes_size
+    elif cfg['data_name'] == 'flowers102':
+        cfg['classes_size'] = 102
     elif cfg['data_name'] in ['WikiText2']:
         cfg['vocab'] = dataset['train'].vocab
         cfg['num_tokens'] = len(dataset['train'].vocab)
@@ -172,6 +174,28 @@ def process_control():
             raise ValueError('Not valid data_split_mode')
     elif cfg['data_name'] in ['CIFAR10', 'CIFAR100', 'ImageNet32']:
         cfg['data_shape'] = [3, 32, 32]
+        cfg['optimizer_name'] = 'SGD'
+        cfg['lr'] = 1e-1
+        cfg['momentum'] = 0.9
+        cfg['weight_decay'] = 5e-4
+        cfg['scheduler_name'] = 'MultiStepLR'
+        cfg['factor'] = 0.1
+        if cfg['data_split_mode'] == 'iid':
+            cfg['num_epochs'] = {'global': 400, 'local': 5}
+            cfg['batch_size'] = {'train': 10, 'test': 50}
+            cfg['milestones'] = [150, 250]
+        elif 'non-iid' in cfg['data_split_mode']:
+            cfg['num_epochs'] = {'global': 500, 'local': 3}
+            cfg['batch_size'] = {'train': 64, 'test': 50}
+            cfg['milestones'] = [200, 400]
+        elif cfg['data_split_mode'] == 'none':
+            cfg['num_epochs'] = 400
+            cfg['batch_size'] = {'train': 100, 'test': 500}
+            cfg['milestones'] = [150, 250]
+        else:
+            raise ValueError('Not valid data_split_mode')
+    elif cfg['data_name'] == 'flowers102':
+        cfg['data_shape'] = [3, 224, 224]
         cfg['optimizer_name'] = 'SGD'
         cfg['lr'] = 1e-1
         cfg['momentum'] = 0.9

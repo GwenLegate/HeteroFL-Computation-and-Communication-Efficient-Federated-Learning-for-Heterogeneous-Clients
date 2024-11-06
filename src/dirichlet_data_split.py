@@ -19,7 +19,7 @@ def dirichlet_split_dataset(ds, num_clients, alpha, num_classes):
     try:
         labels = np.array(ds.target)
     except AttributeError:
-        labels = np.array(ds.labels)
+        labels = np.array(ds._labels)
     dict_partition = {}
     dict_partition['train'] = {}
     dict_partition['test'] = {}
