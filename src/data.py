@@ -35,6 +35,16 @@ def fetch_dataset(data_name, subset):
         dataset['test'] = datasets.CIFAR100(root=root, split='train', subset=subset, transform=datasets.Compose(
             [transforms.ToTensor(),
              transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]))
+    elif data_name == 'ImageNet32':
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                         std=[0.229, 0.224, 0.225])
+        dataset['train'] = datasets.Imagenet32('../data/imagenet32/out_data_train/',
+                                               transform=transforms.Compose([transforms.RandomCrop(32, padding=4),
+                                                                                transforms.RandomHorizontalFlip(),
+                                                                                transforms.ToTensor(),
+                                                                                normalize,]))
+        dataset['test'] = datasets.Imagenet32('../data/imagenet32/out_data_train/',
+                                               transform=transforms.Compose([transforms.ToTensor(), normalize, ]))
     elif data_name in ['PennTreebank', 'WikiText2', 'WikiText103']:
         dataset['train'] = eval('datasets.{}(root=root, split=\'train\')'.format(data_name))
         dataset['test'] = eval('datasets.{}(root=root, split=\'test\')'.format(data_name))

@@ -79,7 +79,8 @@ def runExperiment():
         data_split, label_split = split_dataset(dataset, cfg['num_users'], cfg['data_split_mode'])
         '''print(f' data: {data_split}')
         print(f"num: {len(data_split['test'][49])}")
-        print(f'label {label_split}')'''
+        print(f'label {label_split}')
+        exit()'''
         logger_path = os.path.join('/scratch/glegate/output', 'runs', 'train_{}'.format(cfg['model_tag']))
         logger = Logger(logger_path)
     if data_split is None:
@@ -147,6 +148,8 @@ def stats(dataset, model):
         data_loader = make_data_loader({'train': dataset})['train']
         test_model.train(True)
         for i, input in enumerate(data_loader):
+            if type(input['label'][0]) != torch.Tensor:
+                input['label'] = [torch.tensor(i) for i in input['label']]
             input = collate(input)
             input = to_device(input, cfg['device'])
             test_model(input)
@@ -160,6 +163,8 @@ def test(dataset, data_split, label_split, model, logger, epoch):
         for m in range(cfg['num_users']):
             data_loader = make_data_loader({'test': SplitDataset(dataset, data_split[m])})['test']
             for i, input in enumerate(data_loader):
+                if type(input['label'][0]) != torch.Tensor:
+                    input['label'] = [torch.tensor(i) for i in input['label']]
                 input = collate(input)
                 input_size = input['img'].size(0)
                 input['label_split'] = torch.tensor(label_split[m])
@@ -170,6 +175,8 @@ def test(dataset, data_split, label_split, model, logger, epoch):
                 logger.append(evaluation, 'test', input_size)
         data_loader = make_data_loader({'test': dataset})['test']
         for i, input in enumerate(data_loader):
+            if type(input['label'][0]) != torch.Tensor:
+                input['label'] = [torch.tensor(i) for i in input['label']]
             input = collate(input)
             input_size = input['img'].size(0)
             input = to_device(input, cfg['device'])
@@ -210,6 +217,8 @@ class Local:
         optimizer = make_optimizer(model, lr)
         for local_epoch in range(1, cfg['num_epochs']['local'] + 1):
             for i, input in enumerate(self.data_loader):
+                if type(input['label'][0]) != torch.Tensor:
+                    input['label'] = [torch.tensor(i) for i in input['label']]
                 input = collate(input)
                 input_size = input['img'].size(0)
                 input['label_split'] = torch.tensor(self.label_split)

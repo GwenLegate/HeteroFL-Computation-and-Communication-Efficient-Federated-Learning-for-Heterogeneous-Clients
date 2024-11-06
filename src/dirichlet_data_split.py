@@ -84,5 +84,8 @@ def get_client_labels(dataset, train_idxs, test_idxs):
     Returns: Set of all labels present in both train and validation sets of a client dataset.
         """
     all_idxs = np.concatenate((train_idxs, test_idxs), axis=0)
-    labels = [dataset[i]['label'].item() for i in all_idxs]
+    try:
+        labels = [dataset[i]['label'].item() for i in all_idxs]
+    except AttributeError:
+        labels = [dataset[i]['label'] for i in all_idxs]
     return list(set(labels))
