@@ -197,7 +197,7 @@ def process_control():
     elif cfg['data_name'] == 'flowers102':
         cfg['data_shape'] = [3, 224, 224]
         cfg['optimizer_name'] = 'SGD'
-        cfg['lr'] = 1e-1
+        cfg['lr'] = 1e-4
         cfg['momentum'] = 0.9
         cfg['weight_decay'] = 5e-4
         cfg['scheduler_name'] = 'MultiStepLR'
